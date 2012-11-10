@@ -1,4 +1,4 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -100,15 +100,15 @@ public class MyDatabaseHelper {
 		return true;
 	}
 
-	public static ArrayList<String> getDatesAtLocation(String longitude, String latitude, int withinRadius) {
+	public static ArrayList<String> getDatesAtLocation(String longitude, String latitude, int withinRadiusMeters) {
 
 		double latConversionRatio = 0.0000117;
 		double longConversionRatio = 0.000009;
 
-		String latLow = String.valueOf(Double.parseDouble(latitude) - (latConversionRatio*withinRadius));
-		String latHigh = String.valueOf(Double.parseDouble(latitude) + (latConversionRatio*withinRadius));
-		String longLow = String.valueOf(Double.parseDouble(longitude) - (longConversionRatio*withinRadius));
-		String longHigh = String.valueOf(Double.parseDouble(longitude) + (longConversionRatio*withinRadius));
+		String latLow = String.valueOf(Double.parseDouble(latitude) - (latConversionRatio*withinRadiusMeters));
+		String latHigh = String.valueOf(Double.parseDouble(latitude) + (latConversionRatio*withinRadiusMeters));
+		String longLow = String.valueOf(Double.parseDouble(longitude) - (longConversionRatio*withinRadiusMeters));
+		String longHigh = String.valueOf(Double.parseDouble(longitude) + (longConversionRatio*withinRadiusMeters));
 
 		String SQL = "SELECT DISTINCT SUBSTR(" 
 				+ MyDatabase.UTCTIME_FIELD 
@@ -175,7 +175,7 @@ public class MyDatabaseHelper {
             File data = Environment.getDataDirectory();
 
             if (sd.canWrite()) {
-                String currentDBPath = "//data//"+ "se.wirelesser.location.history.manager" +"//databases//"+MyDatabase.DATABASE_NAME;
+                String currentDBPath = "//data//"+ "se.wirelesser.locattitude" +"//databases//"+MyDatabase.DATABASE_NAME;
                 String backupDBPath = MyDatabase.DATABASE_NAME;
                 File currentDB = new File(data, currentDBPath);
                 File backupDB = new File(sd, UUID.randomUUID().toString());

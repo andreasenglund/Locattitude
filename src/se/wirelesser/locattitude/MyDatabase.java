@@ -1,4 +1,4 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

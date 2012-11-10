@@ -1,5 +1,6 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
+import se.wirelesser.locattitude.R;
 import android.os.Bundle;
 import android.accounts.Account;
 import android.app.Activity;
@@ -88,8 +89,6 @@ public class MainActivity extends Activity implements OnClickListener {
 	    case R.id.button2:
 	    	Intent intent = new Intent(this, MapsSelectionActivity.class);
 	    	startActivity(intent);
-	    	//VegasCheck vegasCheck = new VegasCheck(this);
-			//vegasCheck.execute();	
 	     break;
 	    case R.id.button3:
 	    	MyDatabaseHelper.dumpDatabaseToExternalMemory();

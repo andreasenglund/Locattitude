@@ -1,4 +1,4 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -45,7 +45,7 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 		GoogleCredential credential = new GoogleCredential().setAccessToken(LatitudeAuthenticator.token);
 		Builder builder = new Builder(transport, new JacksonFactory(), credential);
 		service = builder
-				.setApplicationName("LocationHistoryManager")
+				.setApplicationName("Locattitude")
 				.setHttpRequestInitializer(credential)
 				.setJsonHttpRequestInitializer(new GoogleKeyInitializer("AIzaSyB-DUXnyltfAwFknXWe98qsMYXq6dIUi2Y"))
 				.build();

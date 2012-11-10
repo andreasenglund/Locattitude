@@ -1,4 +1,4 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,5 +35,15 @@ public class MyApplicationHelper {
 	public static String epochToUTC(String utcEpochTimeStamp){
 		Date utc = new Date(Long.valueOf(utcEpochTimeStamp));
 		return longDateFormatter.format(utc);
+	}
+	
+	public static String microDegreesToDegrees(int microDegrees) {
+		
+		return Double.toString(microDegrees / 1E6);
+	}
+	
+	public static int degreesToMicroDegrees(double degrees) {
+		
+		return (int)(degrees * 1E6);
 	}
 }

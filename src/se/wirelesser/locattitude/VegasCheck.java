@@ -1,4 +1,4 @@
-package se.wirelesser.location.history.manager;
+package se.wirelesser.locattitude;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
