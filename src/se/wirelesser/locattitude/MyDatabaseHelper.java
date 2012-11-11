@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
+import com.google.android.maps.GeoPoint;
 import com.google.api.services.latitude.Latitude.Location.Delete;
 import com.google.api.services.latitude.Latitude.Location.Get;
 import com.google.api.services.latitude.Latitude.Location.List;
@@ -135,8 +136,33 @@ public class MyDatabaseHelper {
 		cursor.close();
 		return datesAtLocation;
 	}
+	
+	public static ArrayList<GeoPoint> getGeoPointsForDate(String date) {
 
+		String SQL = "SELECT DISTINCT " 
+				+ MyDatabase.LATITUDE_FIELD 
+				+ " AS latitude, "
+				+ MyDatabase.LONGITUDE_FIELD 
+				+ " AS longitude FROM "
+				+ MyDatabase.LOCATION_HISTORY_TABLE_NAME 
+				+ " WHERE SUBSTR(" 
+				+ MyDatabase.UTCTIME_FIELD 
+				+ ", 1, 10) = ?";
 
+		Cursor cursor = myReadableDatabase.rawQuery(SQL, new String[]{date});
+
+		ArrayList<GeoPoint> geoPointsForDay = new ArrayList<GeoPoint>();
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast()) {
+			int latitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LATITUDE_FIELD)));
+			int longitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LONGITUDE_FIELD)));
+			geoPointsForDay.add(new GeoPoint(latitudeE6, longitudeE6));
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return geoPointsForDay;
+	}
+	
 	public static boolean clearOldHistory() {
 		try {
 			myWriteableDatabase.execSQL("DROP TABLE IF EXISTS " + MyDatabase.LOCATION_HISTORY_TABLE_NAME);

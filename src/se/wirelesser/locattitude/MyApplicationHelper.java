@@ -1,7 +1,13 @@
 package se.wirelesser.locattitude;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+
+import android.location.Location;
+import android.location.LocationManager;
+
+import com.google.android.maps.GeoPoint;
 
 public class MyApplicationHelper {
 	public SimpleDateFormat shortDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -45,5 +51,10 @@ public class MyApplicationHelper {
 	public static int degreesToMicroDegrees(double degrees) {
 		
 		return (int)(degrees * 1E6);
+	}
+
+	public static ArrayList<GeoPoint> getGeoPointsForDay(String date) {
+		return MyDatabaseHelper.getGeoPointsForDate(date);
+		
 	}
 }
