@@ -2,9 +2,7 @@ package se.wirelesser.locattitude;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import com.google.api.client.extensions.android2.AndroidHttp;
@@ -14,35 +12,43 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.latitude.Latitude;
 import com.google.api.services.latitude.Latitude.Builder;
-import com.google.api.services.latitude.Latitude.Location.Delete;
 import com.google.api.services.latitude.Latitude.Location.Get;
 import com.google.api.services.latitude.model.Location;
 import com.google.api.services.latitude.Latitude.Location.List;
 import com.google.api.services.latitude.model.LocationFeed;
+
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Intent;
+import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.app.NotificationCompat;
+import android.os.Bundle;
 
+public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolean> {
 
-public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean> {
+	private Latitude service = null;
+	private Activity activity;
+	private MyNotificationHelper myNotificationHelper;
+	private String currentNotificationDate = null;
 
-	static SimpleDateFormat longDateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS");
-	final String AUTH_TOKEN_TYPE = "https://www.googleapis.com/auth/latitude.all.best";
-	Latitude service = null;
-	Activity activity;
-
-	public SynchronizeLatitudeHistory(Activity activity) {
+	public SynchronizeLatitudeHistory(Activity activity, Context context) {
 		super();
 		this.activity = activity;
+	    myNotificationHelper = new MyNotificationHelper(context);
 	}
 
+    protected void onPreExecute(){
+        //Create the notification in the statusbar
+    	myNotificationHelper.createNotification();
+    }
+
 	protected Boolean doInBackground(String... params) {
+		if(!authenticate()){
+			return false;  
+		}
 		HttpTransport transport = AndroidHttp.newCompatibleTransport();
-		GoogleCredential credential = new GoogleCredential().setAccessToken(LatitudeAuthenticator.token);
+		GoogleCredential credential = new GoogleCredential().setAccessToken(MyApplicationHelper.getToken());
 		Builder builder = new Builder(transport, new JacksonFactory(), credential);
 		service = builder
 				.setApplicationName("Locattitude")
@@ -58,12 +64,36 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 			System.out.println("ParseExpection on complete sync");
 			return false;
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			System.out.println("IOExpection on complete sync");
 			return false;
 		}
 		return true;
+	}
+
+	private boolean authenticate() {
+
+		MainActivity.accountManager.getAccountManager().getAuthToken(MainActivity.account, "oauth2:https://www.googleapis.com/auth/latitude.all.best", null, activity, new AccountManagerCallback<Bundle>() {
+			public void run(AccountManagerFuture<Bundle> future) {
+				try {
+					String token = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
+					MyApplicationHelper.setToken(token);
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Error in authentication");
+				}
+			}
+		}, null);
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			System.out.println("InterruptException");
+		}
+		if (MyApplicationHelper.getToken() != null){
+			return true;
+		}
+		return false;  
 	}
 
 	private void syncCompleteHistory() throws ParseException, IOException {
@@ -74,28 +104,29 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 		do {
 			locationFeed = getHistoryList(maxEpochTime);	
 			if (locationFeed != null && locationFeed.getItems() != null && locationFeed.getItems().size() > 0){
+				currentNotificationDate = MyApplicationHelper.epochToUTCShortDate(maxEpochTime);
+				publishProgress(MyApplicationHelper.epochToUTCShortDate(maxEpochTime));
 				MyDatabaseHelper.insertLocations(locationFeed);
 				Location lastInList = locationFeed.getItems().get(locationFeed.getItems().size() - 1);
-				maxEpochTime = subtractMillisFromEpoch((String)lastInList.getTimestampMs(), 1);
+				maxEpochTime = MyApplicationHelper.subtractMillisFromEpoch((String)lastInList.getTimestampMs(), 1);
 			}
 		} while (locationFeed != null && locationFeed.getItems() != null && locationFeed.getItems().size() > 0);
-		
-		createNotification();
-	}
-
-	private void createNotification() {
-		
 	}
 
 	/** The system calls this to perform work in the UI thread and delivers
 	 * the result from doInBackground() */
 	protected void onPostExecute(Boolean success) {
+		myNotificationHelper.completed();
 		if(success){
 			System.out.println("Successful Sync");
 		} else {
 			System.out.println("Failed Sync");
 		}
 	}
+	
+    protected void onProgressUpdate(String... parameters) {
+        myNotificationHelper.progressUpdate(parameters[0]);
+    }
 
 	private LocationFeed getHistoryList(String maxUtcEpochTimeStamp) throws IOException{
 		List listLocation = service.location().list();
@@ -104,7 +135,7 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 		listLocation.setMaxTime(maxUtcEpochTimeStamp);
 		return listLocation.execute();
 	}
-	
+
 	private LocationFeed getHistoryList(String fromUtcEpochTimeStamp, String toUtcEpochTimeStamp, String maxRecords) throws IOException{
 		List listLocation = service.location().list();
 		listLocation.setGranularity("best");
@@ -113,7 +144,7 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 		listLocation.setMinTime(fromUtcEpochTimeStamp);
 		return listLocation.execute();
 	}
-	
+
 	private Location getLatitudeHistoryRecord(String utcEpochTimeStamp){
 		try {
 			Get getLocation = service.location().get(utcEpochTimeStamp);
@@ -123,56 +154,5 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, Void, Boolean>
 			e.printStackTrace();
 		}
 		return null;
-	}
-	
-	private boolean deleteLatitudeHistoryRecord(String utcEpochTimeStamp){
-		try {
-			Delete deleteLocation = service.location().delete(utcEpochTimeStamp);
-			deleteLocation.execute();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
-
-
-
-	private String subtractMillisFromEpoch(String utcEpochTimeStamp, int numberOfMilliSecondsToSubract) throws ParseException { 
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTimeInMillis(Long.valueOf(utcEpochTimeStamp));
-		calendar.add(Calendar.MILLISECOND, -numberOfMilliSecondsToSubract);
-		return String.valueOf(calendar.getTimeInMillis());
-	}
-
-	private String uTCToEpoch(String toUtcDateString, String numberOfDaysToSubtract) throws ParseException { 
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTime(uTCStringToDate(toUtcDateString));
-		calendar.add(Calendar.DATE, -Integer.valueOf(numberOfDaysToSubtract));
-		return String.valueOf(calendar.getTimeInMillis());
-	}
-	
-	
-	private String subtractDaysFromEpoch(String utcEpochTimeStamp, String numberOfDaysToSubtract) throws ParseException { 
-		Calendar calendar = new GregorianCalendar();
-		calendar.setTimeInMillis(Long.valueOf(utcEpochTimeStamp));
-		calendar.add(Calendar.DATE, -Integer.valueOf(numberOfDaysToSubtract));
-		return String.valueOf(calendar.getTimeInMillis());
-	}
-	
-
-	private String epochToUTC(String utcEpochTimeStamp){
-		Date utc = new Date(Long.valueOf(utcEpochTimeStamp));
-		return longDateFormatter.format(utc);
-	}
-
-	private String uTCToEpoch(String utcDateString) throws ParseException{
-		Date utc = longDateFormatter.parse(utcDateString);
-		return String.valueOf(utc.getTime());
-	}
-
-	private Date uTCStringToDate(String utcDateString) throws ParseException{
-		return longDateFormatter.parse(utcDateString);
 	}
 }

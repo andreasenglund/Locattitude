@@ -3,31 +3,19 @@ package se.wirelesser.locattitude;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.channels.FileChannel;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import com.google.android.maps.GeoPoint;
-import com.google.api.services.latitude.Latitude.Location.Delete;
-import com.google.api.services.latitude.Latitude.Location.Get;
-import com.google.api.services.latitude.Latitude.Location.List;
 import com.google.api.services.latitude.model.Location;
 import com.google.api.services.latitude.model.LocationFeed;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils.InsertHelper;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.widget.Toast;
 
 public class MyDatabaseHelper {
 
@@ -143,11 +131,70 @@ public class MyDatabaseHelper {
 				+ MyDatabase.LATITUDE_FIELD 
 				+ " AS latitude, "
 				+ MyDatabase.LONGITUDE_FIELD 
-				+ " AS longitude FROM "
+				+ " AS longitude, "
+				+ MyDatabase.EPOCHTIME_FIELD 
+				+ " AS epochTime FROM "
 				+ MyDatabase.LOCATION_HISTORY_TABLE_NAME 
 				+ " WHERE SUBSTR(" 
 				+ MyDatabase.UTCTIME_FIELD 
-				+ ", 1, 10) = ?";
+				+ ", 1, 10) = ? ORDER BY epochTime";
+
+		Cursor cursor = myReadableDatabase.rawQuery(SQL, new String[]{date});
+
+		ArrayList<GeoPoint> geoPointsForDay = new ArrayList<GeoPoint>();
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast()) {
+			int latitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LATITUDE_FIELD)));
+			int longitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LONGITUDE_FIELD)));
+			geoPointsForDay.add(new GeoPoint(latitudeE6, longitudeE6));
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return geoPointsForDay;
+	}
+	
+	public static ArrayList<GeoPointEpochTime> getGeoPoints(String fromEpochTime, int numberOfPoints) {
+
+		String SQL = "SELECT DISTINCT TOP " + numberOfPoints + " " 
+				+ MyDatabase.LATITUDE_FIELD 
+				+ " AS latitude, "
+				+ MyDatabase.LONGITUDE_FIELD 
+				+ " AS longitude, "
+				+ MyDatabase.EPOCHTIME_FIELD 
+				+ " AS epochTime FROM "
+				+ MyDatabase.LOCATION_HISTORY_TABLE_NAME 
+				+ " WHERE " 
+				+ MyDatabase.EPOCHTIME_FIELD 
+				+ " =< ? ORDER BY epochTime";
+
+		Cursor cursor = myReadableDatabase.rawQuery(SQL, new String[]{fromEpochTime});
+
+		ArrayList<GeoPointEpochTime> geoPoints = new ArrayList<GeoPointEpochTime>();
+		cursor.moveToFirst();
+		while(!cursor.isAfterLast()) {
+			int latitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LATITUDE_FIELD)));
+			int longitudeE6 = MyApplicationHelper.degreesToMicroDegrees(cursor.getDouble(cursor.getColumnIndex(MyDatabase.LONGITUDE_FIELD)));
+			String epochTime = cursor.getString(cursor.getColumnIndex(MyDatabase.EPOCHTIME_FIELD));
+			geoPoints.add(new GeoPointEpochTime(new GeoPoint(latitudeE6, longitudeE6), epochTime));
+			cursor.moveToNext();
+		}
+		cursor.close();
+		return geoPoints;
+	}
+	
+	public static ArrayList<GeoPoint> getEpochTimeAtGeopointOnDate(String date, GeoPoint geoPoint) {
+
+		String SQL = "SELECT DISTINCT " 
+				+ MyDatabase.LATITUDE_FIELD 
+				+ " AS latitude, "
+				+ MyDatabase.LONGITUDE_FIELD 
+				+ " AS longitude, "
+				+ MyDatabase.EPOCHTIME_FIELD 
+				+ " AS epochTime FROM "
+				+ MyDatabase.LOCATION_HISTORY_TABLE_NAME 
+				+ " WHERE SUBSTR(" 
+				+ MyDatabase.UTCTIME_FIELD 
+				+ ", 1, 10) = ? ORDER BY epochTime";
 
 		Cursor cursor = myReadableDatabase.rawQuery(SQL, new String[]{date});
 

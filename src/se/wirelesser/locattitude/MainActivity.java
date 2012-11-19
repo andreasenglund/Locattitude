@@ -1,9 +1,9 @@
 package se.wirelesser.locattitude;
 
 import se.wirelesser.locattitude.R;
+import se.wirelesser.locattitude.adapter.MenuArrayAdapter;
 import android.os.Bundle;
 import android.accounts.Account;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -12,33 +12,75 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.app.ListActivity;
+import android.widget.ListView;
 import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountManager;
 
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends ListActivity implements OnClickListener {
 	
 	public static GoogleAccountManager accountManager = null;
 	public static MyDatabase myDatabase;
 	public static Account account = null;
+	private static final String[] MENU_ITEMS = new String[] { "When was I here?", "How long do I stay here?", "How often do I come here?", "Syncronize", "Dev Tools"};
 	final int DIALOG_ACCOUNTS = 1;
 	Button button;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        myDatabase = new MyDatabase(getApplicationContext());
-        setContentView(R.layout.activity_main);
-        accountManager = new GoogleAccountManager(this);
-        Account accounts[] = accountManager.getAccounts();
-        if(accounts.length > 1){
-        	showDialog(DIALOG_ACCOUNTS);
-        } else {
-            account = accounts[0];
-        }
-        LatitudeAuthenticator authenticate = new LatitudeAuthenticator(this);
-        authenticate.execute();
+        init();
+
+        setListAdapter(new MenuArrayAdapter(this, MENU_ITEMS));
     }
     
-    @Override
+	private void init() {
+        accountManager = new GoogleAccountManager(this);
+        Account accounts[] = accountManager.getAccounts();
+        if(accounts.length == 1){
+        	account = accounts[0];
+        } else {
+            showDialog(DIALOG_ACCOUNTS);
+        }
+        myDatabase = new MyDatabase(getApplicationContext());
+		
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		switch (position) {
+	    case 0:
+	    	Intent intent0 = new Intent(this, MapsSelectionActivity.class);
+	    	intent0.putExtra("TypeOfQuestion", 1);
+	    	startActivity(intent0);
+	     break;
+	    case 1:
+	    	Intent intent1 = new Intent(this, MapsSelectionActivity.class);
+	    	intent1.putExtra("TypeOfQuestion", 2);
+	    	startActivity(intent1);
+	     break;
+	    case 2:
+	    	Intent intent2 = new Intent(this, MapsSelectionActivity.class);
+	    	intent2.putExtra("TypeOfQuestion", 3);
+	    	startActivity(intent2);
+	     break;
+	    case 3:
+	    	startSync();
+	     break;
+	    case 4:
+	    	
+	     break;
+		}
+ 
+	}
+    
+    private void startSync() {
+    	SynchronizeLatitudeHistory synchronizeHistory = new SynchronizeLatitudeHistory(this, getApplicationContext());
+		synchronizeHistory.execute();
+		
+	}
+
+	@Override
     public void onStart() {
         super.onStart();
     }
@@ -46,9 +88,6 @@ public class MainActivity extends Activity implements OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        this.findViewById(R.id.button1).setOnClickListener(this);
-        this.findViewById(R.id.button2).setOnClickListener(this);
-        this.findViewById(R.id.button3).setOnClickListener(this);
     }
     
     @Override
@@ -57,16 +96,14 @@ public class MainActivity extends Activity implements OnClickListener {
         case DIALOG_ACCOUNTS:
           AlertDialog.Builder builder = new AlertDialog.Builder(this);
           builder.setTitle("Select a Google account");
-          accountManager = new GoogleAccountManager(this);
           final Account[] accounts = accountManager.getAccounts();
-          final int size = accounts.length;
-          String[] names = new String[size];
-          for (int i = 0; i < size; i++) {
+          String[] names = new String[accounts.length];
+          for (int i = 0; i < accounts.length; i++) {
             names[i] = accounts[i].name;
           }
           builder.setItems(names, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-              account = accounts[which];
+            	account = accounts[which];
             }
           });
           return builder.create();
@@ -80,20 +117,8 @@ public class MainActivity extends Activity implements OnClickListener {
         return true;
     }
 
-	public void onClick(View v) {
-		switch (v.getId()) {
-	    case R.id.button1: 
-	    	SynchronizeLatitudeHistory synchronizeHistory = new SynchronizeLatitudeHistory(this);
-			synchronizeHistory.execute();
-	     break;
-	    case R.id.button2:
-	    	Intent intent = new Intent(this, MapsSelectionActivity.class);
-	    	startActivity(intent);
-	     break;
-	    case R.id.button3:
-	    	MyDatabaseHelper.dumpDatabaseToExternalMemory();
-	     break;
-		}
+	public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+		
 	}
-    
 }

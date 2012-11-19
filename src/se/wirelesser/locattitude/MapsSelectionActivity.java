@@ -18,6 +18,10 @@ import de.android1.overlaymanager.ManagedOverlayItem;
 import de.android1.overlaymanager.OverlayManager;
 import de.android1.overlaymanager.ZoomEvent;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -38,11 +42,17 @@ public class MapsSelectionActivity extends MapActivity {
 	private OverlayManager overlayManager;
 	private LocationManager locationManager;
 	private Projection projection;
+	private ManagedOverlayItem currentItem = null;
+	private MapsSelectionActivity thisActivity = null;
+	public static String[] dateArray = null;
+	int questionType = -1;
+	ArrayList<GeoPoint> geoPoints = null;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
-	        
-        super.onCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
+		thisActivity = this;
+        questionType = getIntent().getIntExtra("TypeOfQuestion", -1);
         setContentView(R.layout.mapview);
         mapView = (MapView) findViewById(R.id.map);
         mapView.setBuiltInZoomControls(true);
@@ -52,7 +62,9 @@ public class MapsSelectionActivity extends MapActivity {
 		mapView.getOverlays().add(new CurrentPathOverlay());
 		mapController.setCenter(getLastKnownLocation());
 		projection = mapView.getProjection();
-		
+		if (getIntent().getStringExtra("DateToDraw") != null){
+			drawPathForDate(getIntent().getStringExtra("DateToDraw"));
+		}
     }
     
     @Override
@@ -79,37 +91,25 @@ public class MapsSelectionActivity extends MapActivity {
 
 
 			public void onLongPressFinished(MotionEvent e, ManagedOverlay overlay, GeoPoint point, ManagedOverlayItem item) {
-
+				if (currentItem != null){
+					overlay.remove(currentItem);
+				}
+				overlay.createItem(point);
+				
 				String longitude = MyApplicationHelper.microDegreesToDegrees(point.getLongitudeE6());
 				String latitude = MyApplicationHelper.microDegreesToDegrees(point.getLatitudeE6());
 				ArrayList<String> datesAtLocation = MyDatabaseHelper.getDatesAtLocation(longitude, latitude, 25000);
-				String itemText = null;
-				String lastDate = null;
-				for (String date : datesAtLocation) {
-					if (itemText == null){
-						itemText = date;
-					} else {
-						itemText = itemText + "\n" + date;  
-					}
-					lastDate = date;
-				}
-				if (itemText != null){
-					Toast.makeText(getApplicationContext(), itemText, Toast.LENGTH_LONG).show();
-					drawCurrentPath(lastDate);
-				} else {
-					Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
-				}
-					
-			}
-
-			private void drawCurrentPath(String lastDate) {
+				String[] datesArray = new String[datesAtLocation.size()];
+				datesArray = datesAtLocation.toArray(datesArray);
 				
-				List<Overlay> overlays = mapView.getOverlays();
-				for (Overlay overlay : overlays) {
-					if (overlay instanceof CurrentPathOverlay){
-						CurrentPathOverlay currentPathOverlay = (CurrentPathOverlay)overlay;
-						currentPathOverlay.setDate(lastDate);
-					}
+				
+				if (datesAtLocation.size() == 0){
+					Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
+				} else {
+					Intent intent = new Intent(thisActivity, QuestionResponseListActivity.class);
+			    	intent.putExtra("TypeOfQuestion", questionType);
+			    	intent.putExtra("MenuIems", datesArray);
+			    	startActivity(intent);
 				}
 			}
 
@@ -130,6 +130,16 @@ public class MapsSelectionActivity extends MapActivity {
 		return false;
 	}
 	
+	private void drawPathForDate(String date) {
+		List<Overlay> overlays = mapView.getOverlays();
+		for (Overlay overlay : overlays) {
+			if (overlay instanceof CurrentPathOverlay){
+				CurrentPathOverlay currentPathOverlay = (CurrentPathOverlay)overlay;
+				currentPathOverlay.setDate(date);
+			}
+		}
+	}
+	
 	private GeoPoint getLastKnownLocation() {
 		locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		Location lastKnownLocation = null;
@@ -148,32 +158,31 @@ public class MapsSelectionActivity extends MapActivity {
 		return null;
 	}
 	
-	class CurrentPathOverlay extends Overlay{
+	public class CurrentPathOverlay extends Overlay{
 
 		String date = null;
-		boolean reDraw = false;
-	    public CurrentPathOverlay(){
-	    	
-	    }   
+		boolean dateChanged = false;
 
-	    public void setDate(String lastDate) {
-	    	date = lastDate;
-	    	reDraw = true;
+	    public void setDate(String newDate) {
+	    	if (!newDate.equals(date)){
+		    	date = newDate;
+		    	dateChanged = true;
+	    	}
 		}
 	    
 	    public boolean onKeyUp(int keyCode, KeyEvent event, MapView mapView){
-	    	reDraw = true;
 	    	return super.onKeyUp(keyCode, event, mapView);
 	    }
 
 		public void draw(Canvas canvas, MapView mapv, boolean shadow){
-	        super.draw(canvas, mapv, shadow);
-	        
-	        if (date == null || !reDraw){
+	        if (date == null){
 	        	return;
 	        }
 	        
-	        reDraw = false;
+	        if (dateChanged){
+		        geoPoints = MyApplicationHelper.getGeoPointsForDay(date);
+	        }
+	        
 	        Paint   mPaint = new Paint();
 	        mPaint.setDither(true);
 	        mPaint.setColor(Color.RED);
@@ -181,8 +190,6 @@ public class MapsSelectionActivity extends MapActivity {
 	        mPaint.setStrokeJoin(Paint.Join.ROUND);
 	        mPaint.setStrokeCap(Paint.Cap.ROUND);
 	        mPaint.setStrokeWidth(2);
-	        
-	        ArrayList<GeoPoint> geoPoints = MyApplicationHelper.getGeoPointsForDay(date);
 	        
 	        GeoPoint internalGeoPoint1 = null, internalGeoPoint2 = null;
 	        for (GeoPoint geoPoint : geoPoints) {
@@ -213,5 +220,5 @@ public class MapsSelectionActivity extends MapActivity {
 	        super.draw(canvas, mapv, shadow);
 	    }
 	    
-	}    
+	}
 }

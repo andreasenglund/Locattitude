@@ -4,18 +4,19 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="15"
+        android:minSdkVersion="8" />
     
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:icon="@drawable/ic_launcher"
+        android:allowBackup="true"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >     
         <activity
@@ -27,17 +28,15 @@
             </intent-filter>
         </activity>
         
-        <activity android:name=".MapsSelectionActivity" android:label="@string/title_activity_main">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"></action>
-                <category android:name="android.intent.category.LAUNCHER"></category>
-            </intent-filter>
+        <activity 
+            android:name=".MapsSelectionActivity" 
+            android:label="@string/title_activity_main">
        </activity>
-        
-        <service android:name=".ExampleService" />
+       
+        <activity
+            android:name=".QuestionResponseListActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
         <uses-library android:name="com.google.android.maps" />
     </application>
-    
-
-
 </manifest>
