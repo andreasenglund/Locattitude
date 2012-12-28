@@ -1,9 +1,10 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import se.wirelesser.wwwt.R;
 
 import com.google.api.client.extensions.android2.AndroidHttp;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -53,7 +54,7 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		GoogleCredential credential = new GoogleCredential().setAccessToken(MyApplicationHelper.getToken());
 		Builder builder = new Builder(transport, new JacksonFactory(), credential);
 		service = builder
-				.setApplicationName("Locattitude")
+				.setApplicationName("When were we there?")
 				.setHttpRequestInitializer(credential)
 				.setJsonHttpRequestInitializer(new GoogleKeyInitializer("AIzaSyB-DUXnyltfAwFknXWe98qsMYXq6dIUi2Y"))
 				.build();

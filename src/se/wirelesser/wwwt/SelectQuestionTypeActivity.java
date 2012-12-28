@@ -1,6 +1,6 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
-import se.wirelesser.locattitude.adapter.MenuArrayAdapter;
+import se.wirelesser.wwwt.adapter.MenuArrayAdapter;
 import android.os.Bundle;
 import android.content.Intent;
 import android.view.View;

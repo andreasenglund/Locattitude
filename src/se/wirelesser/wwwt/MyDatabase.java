@@ -1,4 +1,4 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

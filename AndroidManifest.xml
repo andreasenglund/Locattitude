@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="se.wirelesser.locattitude"
+    package="se.wirelesser.wwwt"
     android:versionCode="1"
     android:versionName="1.0" >
 
     <uses-sdk
         android:targetSdkVersion="17"
-        android:minSdkVersion="8" />
+        android:minSdkVersion="9" />
     
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -20,7 +20,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >     
         <activity
-            android:name=".MainActivity"
+            android:name="se.wirelesser.wwwt.MainActivity"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,17 +29,17 @@
         </activity>
         
         <activity 
-            android:name=".MapsSelectionActivity" 
+            android:name="se.wirelesser.wwwt.MapsSelectionActivity" 
             android:label="@string/title_activity_main">
        </activity>
        
         <activity
-            android:name=".SelectQuestionTypeActivity"
+            android:name="se.wirelesser.wwwt.SelectQuestionTypeActivity"
             android:label="@string/title_activity_main" >
         </activity>
        
         <activity
-            android:name=".QuestionResponseListActivity"
+            android:name="se.wirelesser.wwwt.QuestionResponseListActivity"
             android:label="@string/title_activity_main" >
         </activity>
         <uses-library android:name="com.google.android.maps" />

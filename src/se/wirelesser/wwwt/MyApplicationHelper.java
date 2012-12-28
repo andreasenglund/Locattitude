@@ -1,4 +1,4 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,10 +34,6 @@ public class MyApplicationHelper {
 	
 	private static Double latConversionRatio = 0.0000117;
 	private static Double longConversionRatio = 0.000009;
-
-	public MyApplicationHelper(SimpleDateFormat shortDateFormatter) {
-		this.shortDateFormatter = shortDateFormatter;
-	}
 	
 	public static String objectToString(Object object) {
 		if (object == null){
@@ -105,7 +101,7 @@ public class MyApplicationHelper {
 		return String.valueOf(calendar.getTimeInMillis());
 	}
 
-	private String uTCToEpoch(String toUtcDateString, String numberOfDaysToSubtract) throws ParseException { 
+	public static String uTCToEpoch(String toUtcDateString, String numberOfDaysToSubtract) throws ParseException { 
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTime(uTCStringToDate(toUtcDateString));
 		calendar.add(Calendar.DATE, -Integer.valueOf(numberOfDaysToSubtract));
@@ -113,19 +109,19 @@ public class MyApplicationHelper {
 	}
 	
 	
-	private String subtractDaysFromEpoch(String utcEpochTimeStamp, String numberOfDaysToSubtract) throws ParseException { 
+	public static String subtractDaysFromEpoch(String utcEpochTimeStamp, String numberOfDaysToSubtract) throws ParseException { 
 		Calendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(Long.valueOf(utcEpochTimeStamp));
 		calendar.add(Calendar.DATE, -Integer.valueOf(numberOfDaysToSubtract));
 		return String.valueOf(calendar.getTimeInMillis());
 	}
 
-	private String uTCToEpoch(String utcDateString) throws ParseException{
+	public static String uTCToEpoch(String utcDateString) throws ParseException{
 		Date utc = longDateFormatter.parse(utcDateString);
 		return String.valueOf(utc.getTime());
 	}
 
-	private Date uTCStringToDate(String utcDateString) throws ParseException{
+	public static Date uTCStringToDate(String utcDateString) throws ParseException{
 		return longDateFormatter.parse(utcDateString);
 	}
 

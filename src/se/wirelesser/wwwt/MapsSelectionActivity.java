@@ -1,9 +1,9 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import se.wirelesser.locattitude.R;
+import se.wirelesser.wwwt.R;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
@@ -11,7 +11,6 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
-import com.google.common.base.CaseFormat;
 
 import de.android1.overlaymanager.ManagedOverlay;
 import de.android1.overlaymanager.ManagedOverlayGestureDetector;
@@ -19,9 +18,6 @@ import de.android1.overlaymanager.ManagedOverlayItem;
 import de.android1.overlaymanager.OverlayManager;
 import de.android1.overlaymanager.ZoomEvent;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -33,7 +29,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 public class MapsSelectionActivity extends MapActivity {
 	

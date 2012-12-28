@@ -1,12 +1,10 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcel;
-import android.os.ParcelFormatException;
 
 public class MyNotificationHelper {
     private Context mContext;

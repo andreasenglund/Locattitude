@@ -1,4 +1,4 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -363,7 +363,7 @@ public class MyDatabaseHelper {
             File data = Environment.getDataDirectory();
 
             if (sd.canWrite()) {
-                String currentDBPath = "//data//"+ "se.wirelesser.locattitude" +"//databases//"+MyDatabase.DATABASE_NAME;
+                String currentDBPath = "//data//"+ "se.wirelesser.wwwt" +"//databases//"+MyDatabase.DATABASE_NAME;
                 String backupDBPath = MyDatabase.DATABASE_NAME;
                 File currentDB = new File(data, currentDBPath);
                 File backupDB = new File(sd, UUID.randomUUID().toString());

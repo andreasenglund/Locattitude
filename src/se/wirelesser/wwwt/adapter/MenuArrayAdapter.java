@@ -1,6 +1,6 @@
-package se.wirelesser.locattitude.adapter;
+package se.wirelesser.wwwt.adapter;
  
-import se.wirelesser.locattitude.R;
+import se.wirelesser.wwwt.R;
  
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -27,10 +27,10 @@ public class MenuArrayAdapter extends ArrayAdapter<String> {
  
 		View rowView = inflater.inflate(R.layout.activity_main, parent, false);
 		TextView textView = (TextView) rowView.findViewById(R.id.label);
-		ImageView imageView = (ImageView) rowView.findViewById(R.id.logo);
+		//ImageView imageView = (ImageView) rowView.findViewById(R.id.logo);
 		textView.setText(values[position]);
 
-		imageView.setImageResource(R.drawable.image1);
+		//imageView.setImageResource(R.drawable.image1);
  
 		return rowView;
 	}

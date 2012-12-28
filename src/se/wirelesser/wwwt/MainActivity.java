@@ -1,6 +1,6 @@
-package se.wirelesser.locattitude;
+package se.wirelesser.wwwt;
 
-import se.wirelesser.locattitude.adapter.MenuArrayAdapter;
+import se.wirelesser.wwwt.adapter.MenuArrayAdapter;
 import android.os.Bundle;
 import android.accounts.Account;
 import android.app.AlertDialog;
@@ -16,7 +16,7 @@ import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountMa
 
 public class MainActivity extends ListActivity {
 	
-	private static final String[] MENU_ITEMS = new String[] { "Choose your point of interest", "Syncronize", "Dump database"};
+	private static final String[] MENU_ITEMS = new String[] { "When were we there?", "Syncronize History", "Dump database"};
 	final int DIALOG_ACCOUNTS = 1;
 	Button button;
 
@@ -32,8 +32,11 @@ public class MainActivity extends ListActivity {
         Account accounts[] = MyApplicationHelper.accountManager.getAccounts();
         if(accounts.length == 1){
         	MyApplicationHelper.account = accounts[0];
-        } else {
+        } else if(accounts.length > 1) {
             showDialog(DIALOG_ACCOUNTS);
+        } else {
+        	Toast.makeText(getApplicationContext(), "Please set up a Google account first.", Toast.LENGTH_LONG).show();
+        	finish();
         }
         MyApplicationHelper.myDatabase = new MyDatabase(getApplicationContext());
         if (MyDatabaseHelper.isDatabaseEmptyOrDoesNotExist()){
@@ -47,13 +50,21 @@ public class MainActivity extends ListActivity {
 		Intent intent = new Intent(this, MapsSelectionActivity.class);
 		switch (position) {
 	    case 0:
-	    	startActivity(intent);
+	    	if (MyDatabaseHelper.isDatabaseEmptyOrDoesNotExist()){
+	        	Toast.makeText(getApplicationContext(), "Your database is currently empty. Please run a sync before using the application.", Toast.LENGTH_LONG).show();
+	        } else {
+	        	startActivity(intent);
+	        }
 	     break;
 	    case 1:
 	    	startSync();
 	     break;
 	    case 2:
-	    	MyDatabaseHelper.dumpDatabaseToExternalMemory();
+	    	if (MyDatabaseHelper.isDatabaseEmptyOrDoesNotExist()){
+	        	Toast.makeText(getApplicationContext(), "Your database is currently empty. Please run a sync before using the application.", Toast.LENGTH_LONG).show();
+	        } else {
+	        	MyDatabaseHelper.dumpDatabaseToExternalMemory();
+	        }
 	     break;
 		}
  
