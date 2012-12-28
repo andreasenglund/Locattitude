@@ -11,6 +11,7 @@ import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
+import com.google.common.base.CaseFormat;
 
 import de.android1.overlaymanager.ManagedOverlay;
 import de.android1.overlaymanager.ManagedOverlayGestureDetector;
@@ -42,29 +43,24 @@ public class MapsSelectionActivity extends MapActivity {
 	private OverlayManager overlayManager;
 	private LocationManager locationManager;
 	private Projection projection;
-	private ManagedOverlayItem currentItem = null;
 	private MapsSelectionActivity thisActivity = null;
 	public static String[] dateArray = null;
-	int questionType = -1;
-	ArrayList<GeoPoint> geoPoints = null;
+	ArrayList<GeoPointEpochTime> geoPoints = null;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		thisActivity = this;
-        questionType = getIntent().getIntExtra("TypeOfQuestion", -1);
         setContentView(R.layout.mapview);
         mapView = (MapView) findViewById(R.id.map);
         mapView.setBuiltInZoomControls(true);
+        mapView.setSatellite(true);
 		mapController = mapView.getController();
 		overlayManager = new OverlayManager(getApplication(), mapView);
 		createOverlayWithListener();
 		mapView.getOverlays().add(new CurrentPathOverlay());
 		mapController.setCenter(getLastKnownLocation());
 		projection = mapView.getProjection();
-		if (getIntent().getStringExtra("DateToDraw") != null){
-			drawPathForDate(getIntent().getStringExtra("DateToDraw"));
-		}
     }
     
     @Override
@@ -80,8 +76,8 @@ public class MapsSelectionActivity extends MapActivity {
 			}
 
 			public boolean onDoubleTap(MotionEvent e, ManagedOverlay overlay, GeoPoint point, ManagedOverlayItem item) {
-				mapController.animateTo(point);
 				mapController.zoomIn();
+				mapController.animateTo(point);
 				return true;
 			}
 
@@ -91,26 +87,14 @@ public class MapsSelectionActivity extends MapActivity {
 
 
 			public void onLongPressFinished(MotionEvent e, ManagedOverlay overlay, GeoPoint point, ManagedOverlayItem item) {
-				if (currentItem != null){
-					overlay.remove(currentItem);
-				}
 				overlay.createItem(point);
-				
 				String longitude = MyApplicationHelper.microDegreesToDegrees(point.getLongitudeE6());
 				String latitude = MyApplicationHelper.microDegreesToDegrees(point.getLatitudeE6());
-				ArrayList<String> datesAtLocation = MyDatabaseHelper.getDatesAtLocation(longitude, latitude, 25000);
-				String[] datesArray = new String[datesAtLocation.size()];
-				datesArray = datesAtLocation.toArray(datesArray);
 				
-				
-				if (datesAtLocation.size() == 0){
-					Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
-				} else {
-					Intent intent = new Intent(thisActivity, QuestionResponseListActivity.class);
-			    	intent.putExtra("TypeOfQuestion", questionType);
-			    	intent.putExtra("MenuIems", datesArray);
-			    	startActivity(intent);
-				}
+				Intent intent = new Intent(thisActivity, SelectQuestionTypeActivity.class);
+				intent.putExtra("Latitude", latitude);
+				intent.putExtra("Longitude", longitude);
+			    startActivity(intent);
 			}
 
 			public boolean onScrolled(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY, ManagedOverlay overlay) {
@@ -123,6 +107,13 @@ public class MapsSelectionActivity extends MapActivity {
 			}
 		});
 		overlayManager.populate();
+	}
+		
+	
+
+	protected void handleFrequencyQuestion(String longitude, String latitude,
+			int questionType) {
+		
 	}
 
 	@Override
@@ -180,7 +171,7 @@ public class MapsSelectionActivity extends MapActivity {
 	        }
 	        
 	        if (dateChanged){
-		        geoPoints = MyApplicationHelper.getGeoPointsForDay(date);
+		        geoPoints = MyApplicationHelper.getGeoPointsForDate(date);
 	        }
 	        
 	        Paint   mPaint = new Paint();
@@ -192,17 +183,17 @@ public class MapsSelectionActivity extends MapActivity {
 	        mPaint.setStrokeWidth(2);
 	        
 	        GeoPoint internalGeoPoint1 = null, internalGeoPoint2 = null;
-	        for (GeoPoint geoPoint : geoPoints) {
+	        for (GeoPointEpochTime geoPointEpochTime : geoPoints) {
 				
 	            if(internalGeoPoint1 == null)
 	            {
-	            	internalGeoPoint1 = geoPoint;
+	            	internalGeoPoint1 = geoPointEpochTime.getGeoPoint();
 	            	continue;
 	            }
 	            else
 	            {
 	            	internalGeoPoint2 = internalGeoPoint1;
-	            	internalGeoPoint1 = geoPoint;
+	            	internalGeoPoint1 = geoPointEpochTime.getGeoPoint();
 	            }
 	            
 		        Point p1 = new Point();

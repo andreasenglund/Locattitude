@@ -9,6 +9,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 	public static final String DATABASE_NAME = "db";
     public static final int DATABASE_VERSION = 1;
     public static final String LOCATION_HISTORY_TABLE_NAME = "locationHistory";
+    public static final String ID_FIELD = "id";
     public static final String EPOCHTIME_FIELD = "epochTime";
     public static final String UTCTIME_FIELD = "utcTime";
     public static final String LATITUDE_FIELD = "latitude";
@@ -19,7 +20,7 @@ public class MyDatabase extends SQLiteOpenHelper {
     public static final String ALTITUDE_FIELD = "altitude";
     public static final String ALTITUDE_ACCURACY_FIELD = "altitudeAccuracy";
     public static final String ACTIVITY_ID_FIELD = "activityId";
-    public static final String[] COLUMN_ARRAY = {EPOCHTIME_FIELD, UTCTIME_FIELD, LATITUDE_FIELD, LONGITUDE_FIELD, ACCURACY_FIELD, SPEED_FIELD, HEADING_FIELD, ALTITUDE_FIELD, ALTITUDE_ACCURACY_FIELD, ACTIVITY_ID_FIELD};
+    public static final String[] COLUMN_ARRAY = {ID_FIELD, EPOCHTIME_FIELD, UTCTIME_FIELD, LATITUDE_FIELD, LONGITUDE_FIELD, ACCURACY_FIELD, SPEED_FIELD, HEADING_FIELD, ALTITUDE_FIELD, ALTITUDE_ACCURACY_FIELD, ACTIVITY_ID_FIELD};
 
     MyDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

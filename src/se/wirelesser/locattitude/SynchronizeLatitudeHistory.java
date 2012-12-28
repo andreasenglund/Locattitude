@@ -20,6 +20,8 @@ import com.google.api.services.latitude.model.LocationFeed;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.AuthenticatorException;
+import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -72,27 +74,30 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 	}
 
 	private boolean authenticate() {
-
-		MainActivity.accountManager.getAccountManager().getAuthToken(MainActivity.account, "oauth2:https://www.googleapis.com/auth/latitude.all.best", null, activity, new AccountManagerCallback<Bundle>() {
-			public void run(AccountManagerFuture<Bundle> future) {
-				try {
-					String token = future.getResult().getString(AccountManager.KEY_AUTHTOKEN);
-					MyApplicationHelper.setToken(token);
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println("Error in authentication");
-				}
-			}
-		}, null);
+		
+		AccountManagerFuture<Bundle> amf = MyApplicationHelper.accountManager.getAccountManager().getAuthToken(MyApplicationHelper.account, "oauth2:https://www.googleapis.com/auth/latitude.all.best", null, activity, null, null);
+		String token;
 		try {
+			token = amf.getResult().getString(AccountManager.KEY_AUTHTOKEN);
+			MyApplicationHelper.setToken(token);
 			Thread.sleep(10000);
+			if (MyApplicationHelper.getToken() != null){
+				return true;
+			}
+		} catch (OperationCanceledException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (AuthenticatorException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println("InterruptException");
 		}
-		if (MyApplicationHelper.getToken() != null){
-			return true;
-		}
+		
 		return false;  
 	}
 

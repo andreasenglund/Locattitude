@@ -4,7 +4,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:targetSdkVersion="15"
+        android:targetSdkVersion="17"
         android:minSdkVersion="8" />
     
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -32,6 +32,11 @@
             android:name=".MapsSelectionActivity" 
             android:label="@string/title_activity_main">
        </activity>
+       
+        <activity
+            android:name=".SelectQuestionTypeActivity"
+            android:label="@string/title_activity_main" >
+        </activity>
        
         <activity
             android:name=".QuestionResponseListActivity"
