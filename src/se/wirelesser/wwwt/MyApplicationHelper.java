@@ -6,9 +6,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import android.accounts.Account;
+import android.os.Parcel;
+import android.os.Parcelable;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.maps.GeoPoint;
 import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountManager;
 
@@ -24,6 +28,7 @@ public class MyApplicationHelper {
 	protected static final int QUESTION_WHEN_DO_I_LEAVE_AND_ARRIVE_HOME_FROM_WORK = 7;
 	protected static final String questionTypeString = "TypeOfQuestion";
 	
+	
 	private static SimpleDateFormat shortDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	private static SimpleDateFormat longDateFormatter = new SimpleDateFormat("yyyy-MM-dd' 'HH:mm");
 	private static String token = null;
@@ -31,6 +36,8 @@ public class MyApplicationHelper {
 	public static GoogleAccountManager accountManager = null;
 	public static MyDatabase myDatabase;
 	public static Account account = null;
+	
+	public static List<GeoPoint> pointsToDraw = null;
 	
 	private static Double latConversionRatio = 0.0000117;
 	private static Double longConversionRatio = 0.000009;
@@ -68,6 +75,10 @@ public class MyApplicationHelper {
 	
 	public static String microDegreesToDegrees(int microDegrees) {
 		return Double.toString(microDegrees / 1E6);
+	}
+	
+	public static double microDegreesToDegreesDouble(int microDegrees) {
+		return microDegrees / 1E6;
 	}
 	
 	public static int degreesToMicroDegrees(double degrees) {
@@ -156,6 +167,10 @@ public class MyApplicationHelper {
 	public static ArrayList<GeoPointEpochTime> getSequencesAtLocationIncludingFirstPointNotAtLocation(String longitude, String latitude, int radius) {
 		return MyDatabaseHelper.getSequencesAtLocationIncludingFirstPointNotAtLocation(longitude, latitude, radius);
 	}
+
+	public static LatLng toLatLng(GeoPoint geoPoint) {
+		return new LatLng(MyApplicationHelper.microDegreesToDegreesDouble(geoPoint.getLatitudeE6()), MyApplicationHelper.microDegreesToDegreesDouble(geoPoint.getLongitudeE6()));
+	}
 	
 }
 
@@ -214,6 +229,61 @@ class ResponseListDateData {
 	}
 	public void setRadius(int radius) {
 		this.radius = radius;
+	}
+}
+
+class QuestionResponseData {
+	
+	private List<String> menuItemStrings = null;
+	private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+	
+	public QuestionResponseData(List<String> menuItemsStrings) {
+		super();
+		this.setMenuItemStrings(menuItemsStrings);
+	}
+
+	public List<String> getMenuItemStrings() {
+		return menuItemStrings;
+	}
+
+	public void setMenuItemStrings(List<String> menuItemStrings) {
+		this.menuItemStrings = menuItemStrings;
+	}
+
+	public List<MenuItem> getMenuItems() {
+		return menuItems;
+	}
+
+	public void setMenuItems(List<MenuItem> menuItems) {
+		this.menuItems = menuItems;
+	}
+}
+
+class MenuItem implements Parcelable{
+	
+	private List<GeoPoint> geoPoints = null;
+	
+	public MenuItem(List<GeoPoint> geoPoints) {
+		super();
+		this.setGeoPoints(geoPoints);
+	}
+
+	public List<GeoPoint> getGeoPoints() {
+		return geoPoints;
+	}
+
+	public void setGeoPoints(List<GeoPoint> geoPoints) {
+		this.geoPoints = geoPoints;
+	}
+
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void writeToParcel(Parcel dest, int flags) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 

@@ -13,20 +13,18 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
+<!-- android:apiKey="06VG286IpjfVAsCA1z2mpE5ERfDiFYTbISY78MQ"  -->
 
 <!-- Demonstrates use of the com.google.android.maps.MapView.
      See corresponding Java code com.example.android.apis.view.MapViewDemo.java. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
-    android:layout_width="match_parent" 
-    android:layout_height="match_parent">
-    <com.google.android.maps.MapView
-        android:id="@+id/map"
-        android:layout_width="match_parent" 
-        android:layout_height="match_parent"
-        android:enabled="true"
-        android:clickable="true"
-        android:apiKey="06VG286IpjfVAsCA1z2mpE5ERfDiFYTbISY78MQ"
-        />
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+  <fragment
+    android:id="@+id/map"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    class="com.google.android.gms.maps.SupportMapFragment"/>
 </LinearLayout>

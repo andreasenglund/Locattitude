@@ -1,5 +1,11 @@
 package se.wirelesser.wwwt;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import com.google.android.maps.GeoPoint;
+
 import se.wirelesser.wwwt.adapter.MenuArrayAdapter;
 import android.os.Bundle;
 import android.content.Intent;
@@ -9,7 +15,7 @@ import android.widget.ListView;
 
 public class SelectQuestionTypeActivity extends ListActivity {
 	
-	private static final String[] MENU_ITEMS = new String[] { "When was I in this city?",  "When was I in this place? (Restaurant, Cafe, etc)"};
+	private static final List<String> MENU_ITEMS = Arrays.asList("When was I in this city?",  "When was I in this place? (Restaurant, Cafe, etc)");
 	private String latitude = null;
 	private String longitude = null;
 

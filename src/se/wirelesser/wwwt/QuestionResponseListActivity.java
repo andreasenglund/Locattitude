@@ -1,9 +1,15 @@
 package se.wirelesser.wwwt;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 import se.wirelesser.wwwt.adapter.MenuArrayAdapter;
+import android.R.menu;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.accounts.Account;
 import android.content.Intent;
 import android.view.View;
@@ -20,19 +26,22 @@ public class QuestionResponseListActivity extends ListActivity implements OnClic
 	public static GoogleAccountManager accountManager = null;
 	public static MyDatabase myDatabase;
 	public static Account account = null;
+	QuestionResponseData questionResponseData = new QuestionResponseData(new ArrayList<String>());
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        setListAdapter(new MenuArrayAdapter(this, answerQuestion(intent.getStringExtra("Longitude"), intent.getStringExtra("Latitude"), intent.getIntExtra(MyApplicationHelper.questionTypeString, -1))));
+        questionResponseData = answerQuestion(intent.getStringExtra("Longitude"), intent.getStringExtra("Latitude"), intent.getIntExtra(MyApplicationHelper.questionTypeString, -1));
+        setListAdapter(new MenuArrayAdapter(this, questionResponseData.getMenuItemStrings()));
     }
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		Intent intent = new Intent(this, MapsSelectionActivity.class);
-		intent.putExtra("DateToDraw", l.getItemAtPosition(position).toString());
+		intent.putExtra("NumberOfGeoPointsToDraw", questionResponseData.getMenuItems().get(position).getGeoPoints().size());
+		MyApplicationHelper.pointsToDraw = questionResponseData.getMenuItems().get(position).getGeoPoints();
     	startActivity(intent);
     	
     	// Make a toast message instead with info about what time and for how long and how many times that day
@@ -52,7 +61,7 @@ public class QuestionResponseListActivity extends ListActivity implements OnClic
 		
 	}
 	
-	protected String[] answerQuestion(String longitude, String latitude,
+	protected QuestionResponseData answerQuestion(String longitude, String latitude,
 			int questionType) {
 		GeoPoint startPoint = new GeoPoint(MyApplicationHelper.degreesToMicroDegrees(latitude), MyApplicationHelper.degreesToMicroDegrees(longitude));
 		int radius = 0;
@@ -63,10 +72,9 @@ public class QuestionResponseListActivity extends ListActivity implements OnClic
 			dateArrayList = MyDatabaseHelper.getDatesAtLocation(longitude, latitude, radius);
 			if (dateArrayList.size() == 0){
 				Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
-				return new String[0];
+				return new QuestionResponseData(new ArrayList<String>());
 			}
-			String[] datesArray = new String[dateArrayList.size()];
-			return dateArrayList.toArray(datesArray);
+			return new QuestionResponseData(dateArrayList);
 		case MyApplicationHelper.QUESTION_WHAT_DATES_WERE_I_IN_AREA:
 			radius = 5000;
 			dateArrayList = MyDatabaseHelper.getDatesAtLocation(longitude, latitude, radius);
@@ -74,32 +82,35 @@ public class QuestionResponseListActivity extends ListActivity implements OnClic
 		case MyApplicationHelper.QUESTION_WHAT_DATES_WERE_I_IN_PLACE:
 			radius = 100;
 			ArrayList<GeoPointEpochTime> geoPoints = MyApplicationHelper.getSequencesAtLocationIncludingFirstPointNotAtLocation(longitude, latitude, radius);
-			ArrayList<String> dateTimeArrayList = new ArrayList<String>();
 			boolean sequenceStarted = false;
 			String sequenceStartTime = null;
+			QuestionResponseData questionResponse = new QuestionResponseData(new ArrayList<String>());
+			MenuItem menuItem = new MenuItem(new ArrayList<GeoPoint>());
 			for (GeoPointEpochTime geoPointEpochTime : geoPoints) {
 				if (!sequenceStarted){
+					questionResponse = new QuestionResponseData(new ArrayList<String>()); 
 					sequenceStartTime = geoPointEpochTime.getEpochTime();
+					menuItem = new MenuItem(new ArrayList<GeoPoint>());
 					sequenceStarted = true;
 				}
+				menuItem.getGeoPoints().add(geoPointEpochTime.getGeoPoint());
 				if (!MyApplicationHelper.isWithinThresholdOfPoint(startPoint, geoPointEpochTime.getGeoPoint(), radius)){
 					sequenceStarted = false;
 					if (Long.valueOf(geoPointEpochTime.getEpochTime()) - Long.valueOf(sequenceStartTime) > 600000){
-						dateTimeArrayList.add(MyApplicationHelper.epochToUTC(sequenceStartTime) + " to "  +  MyApplicationHelper.epochToUTC(geoPointEpochTime.getEpochTime()));
+						questionResponse.getMenuItemStrings().add(MyApplicationHelper.epochToUTC(sequenceStartTime) + " to "  +  MyApplicationHelper.epochToUTC(geoPointEpochTime.getEpochTime()));
+						questionResponse.getMenuItems().add(menuItem);
 						continue;
 					}
 				}
 			}
-			if (dateTimeArrayList.size() == 0){
+			if (questionResponse.getMenuItems().size() == 0){
 				Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
-				return new String[0];
 			}
-			String[] dateTimeArray = new String[dateTimeArrayList.size()];
-			return dateTimeArrayList.toArray(dateTimeArray);
+			return questionResponse;
 		}
 		
 		Toast.makeText(getApplicationContext(), "You've never been here. You should go!", Toast.LENGTH_LONG).show();
-		return new String[0];
+		return new QuestionResponseData(new ArrayList<String>());
 	}
     
 }

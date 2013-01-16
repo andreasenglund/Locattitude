@@ -33,7 +33,6 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 	private Latitude service = null;
 	private Activity activity;
 	private MyNotificationHelper myNotificationHelper;
-	private String currentNotificationDate = null;
 
 	public SynchronizeLatitudeHistory(Activity activity, Context context) {
 		super();
@@ -47,7 +46,8 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
     }
 
 	protected Boolean doInBackground(String... params) {
-		if(!authenticate()){
+		
+		if(!getAuthToken()){
 			return false;  
 		}
 		HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -56,7 +56,7 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		service = builder
 				.setApplicationName("When were we there?")
 				.setHttpRequestInitializer(credential)
-				.setJsonHttpRequestInitializer(new GoogleKeyInitializer("AIzaSyB-DUXnyltfAwFknXWe98qsMYXq6dIUi2Y"))
+				.setJsonHttpRequestInitializer(new GoogleKeyInitializer("AIzaSyAx7GSJ4SVS1eNe65YsCIYc6L6XPGB1HGw"))
 				.build();
 
 		try {
@@ -74,6 +74,20 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		return true;
 	}
 
+	private boolean getAuthToken() {
+		for (int i = 0; i < 3; i++) {
+			if (authenticate()){
+				return true;
+			}
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
 	private boolean authenticate() {
 		
 		AccountManagerFuture<Bundle> amf = MyApplicationHelper.accountManager.getAccountManager().getAuthToken(MyApplicationHelper.account, "oauth2:https://www.googleapis.com/auth/latitude.all.best", null, activity, null, null);
@@ -81,7 +95,6 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		try {
 			token = amf.getResult().getString(AccountManager.KEY_AUTHTOKEN);
 			MyApplicationHelper.setToken(token);
-			Thread.sleep(10000);
 			if (MyApplicationHelper.getToken() != null){
 				return true;
 			}
@@ -94,9 +107,6 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		return false;  
@@ -110,7 +120,6 @@ public class SynchronizeLatitudeHistory extends AsyncTask<String, String, Boolea
 		do {
 			locationFeed = getHistoryList(maxEpochTime);	
 			if (locationFeed != null && locationFeed.getItems() != null && locationFeed.getItems().size() > 0){
-				currentNotificationDate = MyApplicationHelper.epochToUTCShortDate(maxEpochTime);
 				publishProgress(MyApplicationHelper.epochToUTCShortDate(maxEpochTime));
 				MyDatabaseHelper.insertLocations(locationFeed);
 				Location lastInList = locationFeed.getItems().get(locationFeed.getItems().size() - 1);

@@ -1,5 +1,8 @@
 package se.wirelesser.wwwt;
 
+import java.util.Arrays;
+import java.util.List;
+
 import se.wirelesser.wwwt.adapter.MenuArrayAdapter;
 import android.os.Bundle;
 import android.accounts.Account;
@@ -16,7 +19,7 @@ import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountMa
 
 public class MainActivity extends ListActivity {
 	
-	private static final String[] MENU_ITEMS = new String[] { "When were we there?", "Syncronize History", "Dump database"};
+	private static final List<String> MENU_ITEMS = Arrays.asList("When were we there?", "Syncronize History", "Dump database");
 	final int DIALOG_ACCOUNTS = 1;
 	Button button;
 
